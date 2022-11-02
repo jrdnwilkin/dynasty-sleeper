@@ -40,13 +40,8 @@ def get_num_penalties(roster):
     penalty_count = 0
     for zero_starter in zero_pt_starters:
         cannot_be_replaced = True # Assume until a bench player that qualifies is found
-        
-        # TODO: Add code that actually checks to see if they can be replaced by a bench player.
 
-        # Points are easy to check but need to consider how all the position stuff works. 
-
-        # For comparing positions: can check player positions from loading player.json file then roster['starters'] is in the same order of roster_positions to determine which places people are occupying.
-        for index, key in enumerate(helper_utils.get_starters()):
+        for index, key in enumerate(helper_utils.get_starters(roster)):
             if key == zero_starter:
                 roster_position = roster_positions[index]
                 break
@@ -59,12 +54,13 @@ def get_num_penalties(roster):
         else: 
             valid_positions = [roster_position]
 
-        for player_id, bench_player_info in bench_players_info.iteritems():
-            if did_player_score_zero(player_id): #Player doesn't qualify
+        for bench_player_id, bench_player_info in bench_players_info.items():
+            if did_player_score_zero(bench_player_id): #Player doesn't qualify
                 continue
-            if bench_player_info['position'] in valid_positions: 
-                cannot_be_replaced = False
-                break
+            for position in bench_player_info['fantasy_positions']:
+                if position in valid_positions: 
+                    cannot_be_replaced = False
+                    break
 
         # Based on the current wording of the rule, we should not consider potential roster re-positionings (see README for potential changes for more info)
 
