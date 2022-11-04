@@ -5,11 +5,10 @@ import penalties
 import emailer
 import os
 
-def handler(cloud_event):
+def handler(_loud_param1, cloud_param2):
 
     week = 8
-    email_address= 'jrdnwilkin@gmail.com'
-    #email_address = 'bradly.baxter0207@gmail.com'
+    email_address = '' #SET EMAIL ADDRESS
 
     current_league = League(os.environ.get('LEAGUE_ID'))
     week_rosters = weekly_roster.get_or_build_weekly_roster(current_league, week)
@@ -19,5 +18,4 @@ def handler(cloud_event):
 
     print(week_penalties)
     emailer.email_results(week_penalties, email_address, week)
-
 
