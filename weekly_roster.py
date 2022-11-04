@@ -1,5 +1,5 @@
 import json
-from gcloud import storage
+from google.cloud import storage
 
 def get_or_build_weekly_roster(league, week):
     client = storage.Client(project='sleeper-dynasty')

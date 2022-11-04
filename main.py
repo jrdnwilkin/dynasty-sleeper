@@ -1,4 +1,3 @@
-import functions_framework
 from sleeper_wrapper import League
 import scoring
 import weekly_roster
@@ -6,8 +5,6 @@ import penalties
 import emailer
 import os
 
-# Triggered from a message on a Cloud Pub/Sub topic.
-@functions_framework.cloud_event
 def handler(cloud_event):
 
     week = 8
