@@ -1,43 +1,30 @@
-from sleeper_wrapper import League
 from sleeper_wrapper import User
-from copy import copy
-import json
 import helper_utils
 
-# region VARIABLES TO UPDATE
-league_id = 784093541424111616
-season = 2022 # We are expecting rule changes regarding this in 2023 
-week = 8
-# endregion
-
-league = League(league_id)
-rosters = league.get_rosters()
-roster_positions = league.get_league()['roster_positions']
-
-scoring_file = open('scoring.json')
-scoring = json.load(scoring_file)
-scoring_file.close()
-
-def did_player_score_zero(player_id):
-    points = scoring[player_id]
+def did_player_score_zero(player_id, scoring):
+    points = 0
+    if player_id in scoring:
+        points = scoring[player_id]
     if points == 0: 
         return True
     return False
 
-def did_player_score_more_than_zero(player_id):
+def did_player_score_more_than_zero(player_id, scoring):
     points = scoring[player_id]
     if points > 0: 
         return True
     return False
 
-def get_num_penalties(roster):
-    bench_players_info = helper_utils.get_players_info(helper_utils.get_bench_players(roster))
+def score_zero_filter(scoring):
+   def myfilter(player_id):
+       return did_player_score_zero(player_id, scoring)
+   return myfilter
 
+def get_penalized_starters(roster, scoring, roster_positions, nfl_players):
+    bench_players = helper_utils.get_bench_players(roster)
+    zero_pt_starters = list(filter(score_zero_filter(scoring), helper_utils.get_starters(roster)))
 
-    zero_pt_starters = list(filter(did_player_score_zero, helper_utils.get_starters(roster)))
-
-
-    penalty_count = 0
+    peanlized_starters = []
     for zero_starter in zero_pt_starters:
         cannot_be_replaced = True # Assume until a bench player that qualifies is found
 
@@ -54,8 +41,9 @@ def get_num_penalties(roster):
         else: 
             valid_positions = [roster_position]
 
-        for bench_player_id, bench_player_info in bench_players_info.items():
-            if did_player_score_zero(bench_player_id): #Player doesn't qualify
+        for bench_player_id in bench_players:
+            bench_player_info = nfl_players[bench_player_id]
+            if did_player_score_zero(bench_player_id, scoring): #Player doesn't qualify
                 continue
             for position in bench_player_info['fantasy_positions']:
                 if position in valid_positions: 
@@ -65,21 +53,29 @@ def get_num_penalties(roster):
         # Based on the current wording of the rule, we should not consider potential roster re-positionings (see README for potential changes for more info)
 
         if cannot_be_replaced:
-            penalty_count = penalty_count + 1
+            peanlized_starters.append(zero_starter)
 
-    return penalty_count
+    return peanlized_starters
 
 
-def check_league():
+def get_penalties(league, rosters, scoring):
+    roster_positions = league.get_league()['roster_positions']
+
+    penalties = {}
+
+    nfl_players = helper_utils.get_nfl_players()
+
     for roster in rosters:
         user = User(roster['owner_id'])
         user_name = user.get_username()
 
-        #Only test with my team rn
-        if user_name != 'jrdnmcgurdin':
-            continue
+        penalized_starters = get_penalized_starters(roster, scoring, roster_positions, nfl_players)
 
-        num_penalties = get_num_penalties(roster)
-        print('Player: {} had {} penalties in week {}'.format(user_name, num_penalties, week))
+        penalized_starter_names = []
+        for penalized_starter in penalized_starters:
+            penalized_starter_names.append(nfl_players[penalized_starter]['full_name'])
+        user_penalties = {'number': len(penalized_starters), 'penalized_players': penalized_starter_names}
+        
+        penalties[user_name] = user_penalties
 
-check_league()
+    return penalties
