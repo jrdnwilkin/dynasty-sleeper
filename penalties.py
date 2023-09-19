@@ -35,7 +35,7 @@ def get_penalized_starters(matchup_roster, scoring, roster_positions, nfl_player
         valid_positions = []
         if roster_position == "FLEX":
             valid_positions = ["RB", "WR", "TE"]
-        elif roster_position == "SUPERFLEX":
+        elif roster_position == "SUPER_FLEX":
             valid_positions = ["RB", "WR", "TE", "QB"]
         else: 
             valid_positions = [roster_position]
