@@ -20,19 +20,18 @@ def score_zero_filter(scoring):
        return did_player_score_zero(player_id, scoring)
    return myfilter
 
-def get_penalized_starters(roster, scoring, roster_positions, nfl_players):
-    bench_players = helper_utils.get_bench_players(roster)
-    zero_pt_starters = list(filter(score_zero_filter(scoring), helper_utils.get_starters(roster)))
+def get_penalized_starters(matchup_roster, scoring, roster_positions, nfl_players):
+    bench_players = helper_utils.get_bench_players(matchup_roster)
+    zero_pt_starters = list(filter(score_zero_filter(scoring), helper_utils.get_starters(matchup_roster)))
 
     peanlized_starters = []
     for zero_starter in zero_pt_starters:
         cannot_be_replaced = True # Assume until a bench player that qualifies is found
 
-        for index, key in enumerate(helper_utils.get_starters(roster)):
+        for index, key in enumerate(helper_utils.get_starters(matchup_roster)):
             if key == zero_starter:
                 roster_position = roster_positions[index]
                 break
-
         valid_positions = []
         if roster_position == "FLEX":
             valid_positions = ["RB", "WR", "TE"]
@@ -58,18 +57,24 @@ def get_penalized_starters(roster, scoring, roster_positions, nfl_players):
     return peanlized_starters
 
 
-def get_penalties(league, rosters, scoring):
+def get_penalties(league, matchups, scoring):
     roster_positions = league.get_league()['roster_positions']
 
     penalties = {}
 
     nfl_players = helper_utils.get_nfl_players()
 
-    for roster in rosters:
-        user = User(roster['owner_id'])
+    league_rosters = league.get_rosters()
+    for matchup_roster in matchups:
+
+        for team_roster in league_rosters:
+            if team_roster['roster_id'] is matchup_roster['roster_id']:
+                user = User(team_roster['owner_id'])
+        if user is None:
+            raise Exception("Roster ID from this matchup not found in league rosters.")
         user_name = user.get_username()
 
-        penalized_starters = get_penalized_starters(roster, scoring, roster_positions, nfl_players)
+        penalized_starters = get_penalized_starters(matchup_roster, scoring, roster_positions, nfl_players)
 
         penalized_starter_names = []
         for penalized_starter in penalized_starters:

@@ -20,20 +20,6 @@ def get_bench_players(roster):
             if starter != '0':
                 bench_players.remove(starter)
 
-    #Remove IR
-    ir_players = get_ir(roster)
-    if ir_players:
-        for ir_player in ir_players:
-            if starter != '0':
-                bench_players.remove(ir_player)
-
-    #Remove Taxi Squad
-    taxi_players = get_taxi(roster)
-    if taxi_players:
-        for taxi_player in taxi_players:
-            if starter != '0':
-                bench_players.remove(taxi_player)
-
     return bench_players
 
 def get_nfl_players():

@@ -17,7 +17,7 @@ def email_results(week_penalties, email_address, week):
         print(response.body)
         print(response.headers)
     except Exception as e:
-        print(e.message)
+        print(e)
 
 def build_html(penalty_lists):
     html = '<p>'

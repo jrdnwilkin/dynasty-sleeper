@@ -1,6 +1,5 @@
 
 # Limitations
-(A) If this did not run initially shortly after the Monday night game, it will be wrong. Manual calculation will be needed for that week.
 (B) Manually overridden scores are not handled.
 
 1. Copy .env.sample into .env
